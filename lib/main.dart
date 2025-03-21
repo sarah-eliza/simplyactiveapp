@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
-import 'screens/workout_lib.dart';
+import 'screens/timer_library.dart'; // Make sure this path is correct
 import 'screens/workout_vid.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -23,11 +23,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      // Set initial route to HomeScreen instead of login
+      // Set the initial route to HomeScreen
       initialRoute: '/home',
       routes: {
-        '/home': (context) => HomeScreen(),
-        '/workouts': (context) => WorkoutLib(), // Linked to Workout Library
+        '/home': (context) => const HomeScreen(),
+        // Named routes for TimerLibrary screens with fixed parameters
+        '/hiit_timers': (context) => const TimerLibrary(timerType: 'HIIT'),
+        '/strength_timers': (context) => const TimerLibrary(timerType: 'Strength')
       },
       onGenerateRoute: (settings) {
         // Handle dynamic route to WorkoutVideoPage
