@@ -453,27 +453,25 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text("Generated Exercises Data"),
-                    content: SizedBox(
-                      width: double.maxFinite,
-                      height: 300, // Fixed height for the dialog's content.
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: SingleChildScrollView(
-                              child: Text(output),
+                    content: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 300),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(output),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () {
+                                Clipboard.setData(ClipboardData(text: output));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Copied to clipboard")),
+                                );
+                              },
+                              child: const Text("Copy to Clipboard"),
                             ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              Clipboard.setData(ClipboardData(text: output));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Copied to clipboard")),
-                              );
-                            },
-                            child: const Text("Copy to Clipboard"),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     actions: [
@@ -484,7 +482,6 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
                     ],
                   ),
                 );
-
               },
               child: const Text("Submit Exercises"),
             ),
@@ -493,4 +490,10 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
       ),
     );
   }
+}
+
+void main() {
+  runApp(const MaterialApp(
+    home: ExerciseBuilderTable(),
+  ));
 }
