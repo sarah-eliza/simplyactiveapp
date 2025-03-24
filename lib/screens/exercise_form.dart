@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'color_picker_field.dart'; // Only needed if used elsewhere
+import 'package:flutter/services.dart'; // Needed for Clipboard
 
 /// Data model for one exercise row.
 class ExerciseRowData {
@@ -100,7 +100,6 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
 
   // Opens the color picker dialog for a specific row.
   void _pickColorForRow(ExerciseRowData row) {
-    // Use a temporary variable so the dialog can update independently.
     Color tempColor = row.selectedColor;
     showDialog(
       context: context,
@@ -171,7 +170,7 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
   // Build a single row for an exercise.
   Widget _buildRow(ExerciseRowData row, int index, VoidCallback onDelete, VoidCallback onDuplicate) {
     return Container(
-      key: ValueKey(index), // Use index as the key
+      key: ValueKey(index), // Use index as the key to force rebuild on state change.
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -265,11 +264,14 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
             },
             children: List.generate(rows.length, (index) {
               final row = rows[index];
-              return _buildRow(row, index, () {
-                onRemoveRow(index);
-              }, () {
-                onDuplicateRow(index);
-              });
+              return Container(
+                key: ValueKey(index),
+                child: _buildRow(row, index, () {
+                  onRemoveRow(index);
+                }, () {
+                  onDuplicateRow(index);
+                }),
+              );
             }),
           ),
         ),
@@ -286,8 +288,7 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
   String _generateOutput() {
     final buffer = StringBuffer();
     buffer.writeln("# -------------------- Exercises Data --------------------");
-    buffer.writeln(
-        "# Each tuple: (Section, Exercise Name, Modification, Background Color, Duration in seconds)");
+    buffer.writeln("# Each tuple: (Section, Exercise Name, Modification, Background Color, Duration in seconds)");
     buffer.writeln("exercises = [");
     // Warmup rows.
     for (var row in warmupRows) {
@@ -452,7 +453,24 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text("Generated Exercises Data"),
-                    content: SingleChildScrollView(child: Text(output)),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(output),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: output));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Copied to clipboard")),
+                              );
+                            },
+                            child: const Text("Copy to Clipboard"),
+                          ),
+                        ],
+                      ),
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
