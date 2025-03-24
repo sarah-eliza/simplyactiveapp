@@ -29,12 +29,7 @@ class _TimerLibraryState extends State<TimerLibrary> {
       appBar: AppBar(
         title: Text('${widget.timerType} Timers'),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add your action here (e.g., navigate to a video upload page)
-        },
-        child: const Icon(Icons.add),
-      ),
+      // Removed the floatingActionButton
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: _timerStream,
         builder: (context, snapshot) {

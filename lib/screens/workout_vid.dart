@@ -5,10 +5,10 @@ import 'dart:async';
 
 class WorkoutVideoPage extends StatefulWidget {
   final String videoPath;
-  const WorkoutVideoPage({Key? key, required this.videoPath}) : super(key: key);
+  const WorkoutVideoPage({super.key, required this.videoPath});
 
   @override
-  _WorkoutVideoPageState createState() => _WorkoutVideoPageState();
+  State<WorkoutVideoPage> createState() => _WorkoutVideoPageState();
 }
 
 class _WorkoutVideoPageState extends State<WorkoutVideoPage> {
@@ -22,12 +22,11 @@ class _WorkoutVideoPageState extends State<WorkoutVideoPage> {
     super.initState();
     _enterLandscapeMode();
 
-    _controller = VideoPlayerController.network(widget.videoPath);
+    // Use VideoPlayerController.networkUrl with Uri.parse
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoPath));
     _initializeVideoPlayerFuture = _controller.initialize().then((_) {
       if (!_controller.value.hasError) {
         _controller.play();
-      } else {
-        print("Video Error: ${_controller.value.errorDescription}");
       }
       setState(() {});
     });
@@ -56,14 +55,14 @@ class _WorkoutVideoPageState extends State<WorkoutVideoPage> {
 
   void _startHideControlsTimer() {
     _hideControlsTimer?.cancel();
-    _hideControlsTimer = Timer(Duration(seconds: 3), () {
+    _hideControlsTimer = Timer(const Duration(seconds: 3), () {
       setState(() {
         _showControls = false;
       });
     });
   }
 
-  // Called when user interacts (clicks or hovers)
+  // Called when the user interacts with the video.
   void _onUserInteraction() {
     setState(() {
       _showControls = true;
@@ -71,7 +70,7 @@ class _WorkoutVideoPageState extends State<WorkoutVideoPage> {
     _startHideControlsTimer();
   }
 
-  // Seek by a given offset; updated to 10 seconds.
+  // Seek by the given offset.
   void _seekBy(Duration offset) {
     final newPosition = _controller.value.position + offset;
     _controller.seekTo(newPosition);
@@ -103,18 +102,18 @@ class _WorkoutVideoPageState extends State<WorkoutVideoPage> {
                           color: Colors.black54,
                           child: Stack(
                             children: [
-                              // Exit button (top-left)
+                              // Exit button.
                               Positioned(
                                 top: 40,
                                 left: 20,
                                 child: IconButton(
                                   onPressed: () => Navigator.pop(context),
-                                  icon: Icon(Icons.arrow_back,
+                                  icon: const Icon(Icons.arrow_back,
                                       color: Colors.white, size: 30),
                                   tooltip: 'Back to Workout Library',
                                 ),
                               ),
-                              // Playback controls (bottom center)
+                              // Playback controls.
                               Positioned(
                                 bottom: 20,
                                 left: 0,
@@ -122,15 +121,13 @@ class _WorkoutVideoPageState extends State<WorkoutVideoPage> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    // Rewind 10 seconds button
                                     IconButton(
                                       onPressed: () =>
-                                          _seekBy(Duration(seconds: -10)),
-                                      icon: Icon(Icons.replay_10, // Use replay_10 icon as proxy
+                                          _seekBy(const Duration(seconds: -10)),
+                                      icon: const Icon(Icons.replay_10,
                                           color: Colors.white, size: 36),
                                       tooltip: 'Rewind 10 seconds',
                                     ),
-                                    // Play/Pause toggle
                                     IconButton(
                                       onPressed: () {
                                         setState(() {
@@ -148,11 +145,10 @@ class _WorkoutVideoPageState extends State<WorkoutVideoPage> {
                                       ),
                                       tooltip: 'Play/Pause',
                                     ),
-                                    // Forward 10 seconds button
                                     IconButton(
                                       onPressed: () =>
-                                          _seekBy(Duration(seconds: 10)),
-                                      icon: Icon(Icons.forward_10, // Use forward_10 icon as proxy
+                                          _seekBy(const Duration(seconds: 10)),
+                                      icon: const Icon(Icons.forward_10,
                                           color: Colors.white, size: 36),
                                       tooltip: 'Forward 10 seconds',
                                     ),
@@ -171,11 +167,11 @@ class _WorkoutVideoPageState extends State<WorkoutVideoPage> {
             return Center(
               child: Text(
                 "Error loading video: ${_controller.value.errorDescription}",
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
             );
           } else {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
         },
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'exercise_form.dart'; 
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -29,7 +30,8 @@ class HomeScreen extends StatelessWidget {
         child: SafeArea(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -59,7 +61,8 @@ class HomeScreen extends StatelessWidget {
                         Navigator.pushNamed(context, '/hiit_timers');
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
                         backgroundColor: Colors.white, // White button for contrast
                         foregroundColor: Colors.black,
                         elevation: 5,
@@ -69,7 +72,8 @@ class HomeScreen extends StatelessWidget {
                       ),
                       child: const Text(
                         'HIIT Timers',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -82,7 +86,8 @@ class HomeScreen extends StatelessWidget {
                         Navigator.pushNamed(context, '/strength_timers');
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.black,
                         elevation: 5,
@@ -92,7 +97,39 @@ class HomeScreen extends StatelessWidget {
                       ),
                       child: const Text(
                         'Strength Timers',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Add Workout button (navigates to the ExerciseBuilderTable page)
+                  SizedBox(
+                    width: 250,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const ExerciseBuilderTable(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        'Add Workout',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
