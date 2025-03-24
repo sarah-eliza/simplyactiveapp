@@ -453,12 +453,17 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text("Generated Exercises Data"),
-                    content: SingleChildScrollView(
+                    content: SizedBox(
+                      width: double.maxFinite,
+                      height: 300, // Fixed height for the dialog's content.
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(output),
-                          const SizedBox(height: 16),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Text(output),
+                            ),
+                          ),
                           ElevatedButton(
                             onPressed: () {
                               Clipboard.setData(ClipboardData(text: output));
@@ -479,6 +484,7 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
                     ],
                   ),
                 );
+
               },
               child: const Text("Submit Exercises"),
             ),
