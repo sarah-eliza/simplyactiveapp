@@ -32,7 +32,7 @@ class ExerciseRowData {
   String get colorString =>
       "(${selectedColor.red.toInt()},${selectedColor.green.toInt()},${selectedColor.blue.toInt()})";
 
-  // Create a duplicate of this row.
+  // Create a duplicate (deep copy) of this row.
   ExerciseRowData duplicate() {
     return ExerciseRowData(
       initialSection: sectionController.text,
@@ -59,14 +59,11 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
   final List<ExerciseRowData> warmupRows = [];
   final List<ExerciseRowData> cooldownRows = [];
   // Map for Round exercises (multiple rounds).
-  final Map<int, List<ExerciseRowData>> roundRows = {
-    1: [],
-    2: [],
-    3: [],
-  };
+  final Map<int, List<ExerciseRowData>> roundRows = {};
 
   // For Round tab: track which round is selected.
   int selectedRound = 1;
+  int maxRound = 1; // Track the highest round number
 
   late TabController _tabController;
   final double _rowHeight = 80.0; // Estimated row height
@@ -74,10 +71,13 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
   @override
   void initState() {
     super.initState();
-    // Start with one row in each category.
-    warmupRows.add(ExerciseRowData());
-    cooldownRows.add(ExerciseRowData());
-    roundRows[1]!.add(ExerciseRowData());
+    // Start with one row in Warmup and Cooldown.
+    warmupRows.add(ExerciseRowData(initialSection: "Warmup"));
+    cooldownRows.add(ExerciseRowData(initialSection: "Cooldown"));
+    // Initialize round 1.
+    roundRows[1] = [ExerciseRowData(initialSection: "Round 1")];
+    maxRound = 1;
+    selectedRound = 1;
     _tabController = TabController(length: 3, vsync: this);
   }
 
@@ -96,6 +96,31 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
     }
     _tabController.dispose();
     super.dispose();
+  }
+
+  // Helper to format seconds into HH:MM:SS.
+  String _formatDuration(int totalSeconds) {
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+    return "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+  }
+
+  // Calculate total duration (in seconds) from all rows.
+  int _getTotalDuration() {
+    int total = 0;
+    for (var row in warmupRows) {
+      total += int.tryParse(row.durationController.text) ?? 0;
+    }
+    for (var list in roundRows.values) {
+      for (var row in list) {
+        total += int.tryParse(row.durationController.text) ?? 0;
+      }
+    }
+    for (var row in cooldownRows) {
+      total += int.tryParse(row.durationController.text) ?? 0;
+    }
+    return total;
   }
 
   // Opens the color picker dialog for a specific row.
@@ -170,7 +195,7 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
   // Build a single row for an exercise.
   Widget _buildRow(ExerciseRowData row, int index, VoidCallback onDelete, VoidCallback onDuplicate) {
     return Container(
-      key: ValueKey(index), // Use index as the key to force rebuild on state change.
+      key: ValueKey(index), // Use index as key to force rebuild on state change.
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -197,6 +222,13 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
               controller: row.durationController,
               decoration: const InputDecoration(hintText: "Duration"),
               keyboardType: TextInputType.number,
+              onChanged: (value) {
+                setState(() {});
+              },
+              // Alternatively, you can use:
+              // onEditingComplete: () {
+              //   setState(() {});
+              // },
             ),
           ),
           Expanded(
@@ -299,8 +331,8 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
             '    ("${row.sectionController.text}", "${row.exerciseNameController.text}", "${row.modificationController.text}", ${row.colorString}, ${row.durationController.text}),');
       }
     }
-    // Round rows: iterate through rounds 1-3.
-    for (int r = 1; r <= 3; r++) {
+    // Round rows: iterate through rounds 1 to maxRound.
+    for (int r = 1; r <= maxRound; r++) {
       var list = roundRows[r] ?? [];
       for (var row in list) {
         if (row.sectionController.text.isNotEmpty ||
@@ -329,6 +361,17 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
     return Scaffold(
       appBar: AppBar(
         title: const Text("Exercise Builder Table"),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Center(
+              child: Text(
+                "Total: ${_formatDuration(_getTotalDuration())}",
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+          )
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -353,7 +396,7 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
                         _buildReorderableTable(
                           warmupRows,
                           () => setState(() {
-                            warmupRows.add(ExerciseRowData());
+                            warmupRows.add(ExerciseRowData(initialSection: "Warmup"));
                           }),
                           (index) => setState(() {
                             warmupRows[index].dispose();
@@ -375,11 +418,13 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
                             const Text("Select Round: "),
                             DropdownButton<int>(
                               value: selectedRound,
-                              items: const [
-                                DropdownMenuItem(value: 1, child: Text("Round 1")),
-                                DropdownMenuItem(value: 2, child: Text("Round 2")),
-                                DropdownMenuItem(value: 3, child: Text("Round 3")),
-                              ],
+                              items: List.generate(maxRound, (index) {
+                                int round = index + 1;
+                                return DropdownMenuItem(
+                                  value: round,
+                                  child: Text("Round $round"),
+                                );
+                              }),
                               onChanged: (value) {
                                 if (value != null) {
                                   setState(() {
@@ -389,13 +434,25 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
                               },
                             ),
                             const SizedBox(width: 20),
-                            if (selectedRound < 3)
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  maxRound++;
+                                  roundRows[maxRound] = [];
+                                  selectedRound = maxRound;
+                                });
+                              },
+                              child: const Text("Add New Round"),
+                            ),
+                            const SizedBox(width: 20),
+                            if (selectedRound < maxRound)
                               ElevatedButton(
                                 onPressed: () {
                                   if (roundRows[selectedRound] != null) {
                                     setState(() {
-                                      roundRows[selectedRound + 1] =
-                                          List.from(roundRows[selectedRound]!);
+                                      roundRows[selectedRound + 1] = roundRows[selectedRound]!
+                                          .map((row) => row.duplicate())
+                                          .toList();
                                     });
                                   }
                                 },
@@ -408,7 +465,7 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
                           roundRows[selectedRound] ?? [],
                           () => setState(() {
                             roundRows[selectedRound] ??= [];
-                            roundRows[selectedRound]!.add(ExerciseRowData());
+                            roundRows[selectedRound]!.add(ExerciseRowData(initialSection: "Round $selectedRound"));
                           }),
                           (index) => setState(() {
                             roundRows[selectedRound]![index].dispose();
@@ -429,7 +486,7 @@ class _ExerciseBuilderTableState extends State<ExerciseBuilderTable>
                         _buildReorderableTable(
                           cooldownRows,
                           () => setState(() {
-                            cooldownRows.add(ExerciseRowData());
+                            cooldownRows.add(ExerciseRowData(initialSection: "Cooldown"));
                           }),
                           (index) => setState(() {
                             cooldownRows[index].dispose();
