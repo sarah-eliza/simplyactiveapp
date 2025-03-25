@@ -3,13 +3,22 @@ import 'screens/home_screen.dart';
 import 'screens/timer_library.dart'; // Make sure this path is correct
 import 'screens/workout_vid.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables from the .env file.
+  await dotenv.load(fileName: ".env");
+    
+  // Initialize Supabase using values from the .env file.
+  // This call ensures that Supabase.instance is ready for use in the app.
   await Supabase.initialize(
-    url: 'https://bnxaprvmmomzthsnbihm.supabase.co', // Replace with your Supabase URL
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJueGFwcnZtbW9tenRoc25iaWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU0MDg5MzcsImV4cCI6MjA1MDk4NDkzN30.LQUogdaIh3WCT_Q60Na5WWvHXcYeff0ir0qSsHifAz8', // Replace with your Supabase anon key
+    url: dotenv.env['SUPABASE_URL'] ?? '',
+    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
+  print("Supabase initialized successfully.");
+
   runApp(const MyApp());
 }
 
